@@ -1,11 +1,12 @@
-import numpy
-import matplotlib.pyplot
+import numpy as np
+import matplotlib.pyplot as plt
 
-backLegSensorValues = numpy.load("data/backLegSensorValues.npy")
-frontLegSensorValues = numpy.load("data/frontLegSensorValues.npy")
-backLegLine, = matplotlib.pyplot.plot(backLegSensorValues, linewidth=3)
-frontLegLine, = matplotlib.pyplot.plot(frontLegSensorValues)
-backLegLine.set_label('Back Leg')
-frontLegLine.set_label('Front Leg')
-matplotlib.pyplot.legend()
-matplotlib.pyplot.show()
+x = np.linspace(-np.pi, np.pi, 1000)
+print(x)
+print(np.load("data/sin.npy")[0])
+np.save("data/sin.npy", np.sin(x))
+plt.plot(x, np.sin(x))
+plt.xlabel('Angle [rad]')
+plt.ylabel('sin(x)')
+plt.axis('tight')
+plt.show()

@@ -2,6 +2,8 @@ import pybullet as p
 import numpy
 import pyrosim.pyrosim as pyrosim
 from sensor import SENSOR
+from motor import MOTOR
+import constants as c
 
 class ROBOT:
     def __init__(self):
@@ -13,9 +15,8 @@ class ROBOT:
 
         pyrosim.Prepare_To_Simulate("body.urdf")
         self.Prepare_To_Sense()
+        self.Prepare_To_Act()
 
-        self.sensors = {}
-        self.motors = {}
 
     def Prepare_To_Sense(self):
         self.sensors = {}
@@ -31,5 +32,13 @@ class ROBOT:
         self.frequency = c.FREQUENCY
         self.offset = c.OFFSET
         self.motors = {}
+        i = 0
         for jointName in pyrosim.jointNamesToIndices:
-            self.motors[jointName] = MOTOR(jointName)
+            if i == 1:
+                self.frequency = self.frequency/2
+            self.motors[jointName] = MOTOR(self.robot, jointName, self.amplitude, self.frequency, self.offset)
+            i = 1
+
+    def Act(self, i):
+        for motor in self.motors.values():
+            motor.Set_Value(i)

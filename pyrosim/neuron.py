@@ -58,6 +58,7 @@ class NEURON:
                 weight = synapses[key].Get_Weight()
                 neuron_value = neurons[key[0]].Get_Value()
                 self.Allow_Presynaptic_Neuron_To_Influence_Me(weight, neuron_value)
+        self.Threshold()
 
     def Is_Hidden_Neuron(self):
 

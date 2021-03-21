@@ -1,0 +1,414 @@
+Include: clear-marks.vader
+Include: WindowHelpers.vader
+
+Execute (Set Settings, Set Plugin Mappings):
+  let g:markbar_enable_mark_highlighting = v:false
+  let g:markbar_jump_to_exact_position = v:true
+
+  let g:markbar_num_lines_context = 3
+  let g:markbar_peekaboo_open_vertical = v:true
+  let g:markbar_peekaboo_section_separation = 1
+
+  let g:markbar_peekaboo_mark_name_format_string     = ''
+  let g:markbar_peekaboo_file_mark_format_string     = '%s'
+  let g:markbar_peekaboo_numbered_mark_format_string = ''
+
+  let g:markbar_peekaboo_mark_name_arguments     = []
+  let g:markbar_peekaboo_file_mark_arguments     = ['fname']
+  let g:markbar_peekaboo_numbered_mark_arguments = []
+
+  let g:markbar_peekaboo_marks_to_display = 'ABC'
+
+Do (Open Peekaboo Markbar, Apostrophe, No Marks):
+  '
+Expect:
+  " Press ? for help
+
+Do (Open Peekaboo Markbar, Backtick, No Marks):
+  `
+Expect:
+  " Press ? for help
+
+Do (Close Peekaboo Markbar):
+  \<Esc>
+Then:
+  AssertEqual '', getbufvar('.', 'is_markbar')
+
+" If the 'open markbar' binding works while the 'toggle' binding doesn't,
+" this should fail
+Do (Set Marks, Peekaboo Markbar Open):
+  :edit! 10lines.txt\<cr>
+  1G5lmA5GmB10GmC
+  '
+Then:
+  AssertEqual 0, &buflisted
+  AssertEqual 'nofile', &buftype
+  AssertEqual 'hide', &bufhidden
+  AssertEqual 0, &swapfile
+  AssertEqual 'markbar', &filetype
+  AssertEqual 'markbar', &syntax
+  AssertEqual 1, b:is_markbar
+Expect:
+  " Press ? for help
+  ['A]: 10lines.txt
+    ~
+    first line
+    second line
+
+  ['B]: 10lines.txt
+    fourth line
+    fifth line
+    sixth line
+
+  ['C]: 10lines.txt
+    ninth line
+    tenth line
+    ~
+  
+Do (Close Peekaboo Markbar):
+  \<Esc>
+Then:
+  Assert !exists('b:is_markbar')
+
+Execute (Preserve Window Layout On Closing Peekaboo Markbar):
+  vsplit
+  vsplit
+  let g:saved_state = GetWinState()
+  normal '
+  execute "normal \<Esc>"
+Then:
+  call AssertWinStatesAboutEqual(g:saved_state, GetWinState(), 1)
+
+Execute (Test Mark Highlighting, Backtick):
+  let g:markbar_enable_mark_highlighting = v:true
+  normal `
+Expect:
+  " Press ? for help
+  ['A]: 10lines.txt
+    ~
+    first➜ line
+    second line
+
+  ['B]: 10lines.txt
+    fourth line
+    ➜fifth line
+    sixth line
+
+  ['C]: 10lines.txt
+    ninth line
+    ➜tenth line
+    ~
+  
+Execute (Test Mark Highlighting, Apostrophe):
+  let g:markbar_enable_mark_highlighting = v:true
+  normal '
+Expect:
+  " Press ? for help
+  ['A]: 10lines.txt
+    ~
+    ➜first line
+    second line
+
+  ['B]: 10lines.txt
+    fourth line
+    ➜fifth line
+    sixth line
+
+  ['C]: 10lines.txt
+    ninth line
+    ➜tenth line
+    ~
+  
+Execute (Disable Mark Highlighting):
+  let g:markbar_enable_mark_highlighting = v:false
+
+Do (Select Mark):
+  '
+  \C
+Then:
+  let cur_pos = getcurpos()
+
+  " check line number
+  AssertEqual 12, cur_pos[1]
+
+Do (Select Further Marks):
+  `
+  \C\B\A
+Then:
+  let cur_pos = getcurpos()
+
+  " check line number
+  AssertEqual 2, cur_pos[1]
+
+Do (Select and Go To Mark, Apostrophe):
+  '
+  \A\<cr>
+Then:
+  AssertEqual '10lines.txt', expand('%:t')
+  let cur_pos = getcurpos()
+
+  " check line number
+  AssertEqual 1, cur_pos[1]
+
+  " check column number
+  " default JumpToExactPosition behavior makes this behave like backtick
+  AssertEqual 6, cur_pos[2]
+
+Do (Select and Go To Mark, Backtick):
+  `
+  \A\<cr>
+Then:
+  AssertEqual '10lines.txt', expand('%:t')
+  let cur_pos = getcurpos()
+
+  " check line number
+  AssertEqual 1, cur_pos[1]
+
+  " check column number
+  AssertEqual 6, cur_pos[2]
+
+Do (Go Direct To Mark, Apostrophe):
+  '
+  A 
+Then:
+  AssertEqual '10lines.txt', expand('%:t')
+  let cur_pos = getcurpos()
+
+  " check line number
+  AssertEqual 1, cur_pos[1]
+
+  " check column number
+  " TODO why does this test fail (goes to column 2?)
+  " AssertEqual 1, cur_pos[2]
+
+Do (Go Direct To Mark, Backtick):
+  `
+  A
+Then:
+  AssertEqual '10lines.txt', expand('%:t')
+  let cur_pos = getcurpos()
+
+  " check line number
+  AssertEqual 1, cur_pos[1]
+
+  " check column number
+  AssertEqual 6, cur_pos[2]
+
+Do (View Single-Quote Mark):
+  :let g:markbar_peekaboo_marks_to_display = '''ABC'\<cr>
+  :edit! 10lines.txt\<cr>
+  gg5l
+  :let cur_pos = getcurpos()\<cr>
+  :normal! 'B\<cr>
+  '
+Expect:
+  " Press ? for help
+  ['']: 
+    ~
+    first line
+    second line
+
+  ['A]: 10lines.txt
+    ~
+    first line
+    second line
+
+  ['B]: 10lines.txt
+    fourth line
+    fifth line
+    sixth line
+
+  ['C]: 10lines.txt
+    ninth line
+    tenth line
+    ~
+  
+Do (Edge Case: Go Direct To Single-Quote Mark):
+  :edit! 10lines.txt\<cr>
+  gg5l
+  :normal! 'B\<cr>
+  '
+  '
+Then: 
+  let cur_pos = getcurpos()
+  " check line number
+  AssertEqual 1, cur_pos[1]
+
+  " check column number
+  AssertEqual 1, cur_pos[2]
+
+Do (Edge Case: Go Direct To Backtick Mark):
+  :edit! 10lines.txt\<cr>
+  gg5l
+  :execute 'normal! ''B'\<cr>
+  `
+  `
+Then:
+  let cur_pos = getcurpos()
+  " check line number
+  AssertEqual 1, cur_pos[1]
+
+  " check column number
+  AssertEqual 6, cur_pos[2]
+
+Execute (Show More Marks, Change Num Lines Context):
+  let g:markbar_peekaboo_marks_to_display = 'abcABC'
+  let g:markbar_num_lines_context = {
+      \ 'around_local': 2,
+      \ 'around_file': 0,
+      \ }
+
+Do (Set Local Marks):
+  :edit! 10lines.txt\<cr>
+  2G0ma4G$mb
+  '
+
+Expect (Num Context Defaults to Same as Ordinary Markbar):
+  " Press ? for help
+  ['a]: 
+    second line
+    third line
+
+  ['b]: 
+    fourth line
+    fifth line
+
+  ['A]: 10lines.txt
+
+  ['B]: 10lines.txt
+
+  ['C]: 10lines.txt
+  
+Execute (Show Correct Num Lines When File Shows More than Local):
+  let g:markbar_num_lines_context = {
+      \ 'around_local': 0,
+      \ 'around_file': 2,
+      \ }
+  edit! 10lines.txt
+  normal '
+
+Expect (Correct Numbers of Lines of Context):
+  " Press ? for help
+  ['a]: 
+
+  ['b]: 
+
+  ['A]: 10lines.txt
+    first line
+    second line
+
+  ['B]: 10lines.txt
+    fifth line
+    sixth line
+
+  ['C]: 10lines.txt
+    tenth line
+    ~
+  
+Execute (Separately Configure Normal and Peekaboo):
+  let g:markbar_num_lines_context = {
+      \ 'around_local': 0,
+      \ 'around_file': 2,
+      \ 'peekaboo_around_local': 5,
+      \ 'peekaboo_around_file': 8,
+      \ }
+  edit! 10lines.txt
+  normal '
+
+Expect (Correct Numbers of Lines of Context):
+  " Press ? for help
+  ['a]: 
+    ~
+    first line
+    second line
+    third line
+    fourth line
+
+  ['b]: 
+    second line
+    third line
+    fourth line
+    fifth line
+    sixth line
+
+  ['A]: 10lines.txt
+    ~
+    ~
+    ~
+    first line
+    second line
+    third line
+    fourth line
+    fifth line
+
+  ['B]: 10lines.txt
+    second line
+    third line
+    fourth line
+    fifth line
+    sixth line
+    seventh line
+    eighth line
+    ninth line
+
+  ['C]: 10lines.txt
+    seventh line
+    eighth line
+    ninth line
+    tenth line
+    ~
+    ~
+    ~
+    ~
+  
+Execute (Enable Mark Highlighting):
+  let g:markbar_enable_mark_highlighting = v:true
+  edit! 10lines.txt
+  normal `
+
+Expect (Correct Output, Backtick-Like):
+  " Press ? for help
+  ['a]: 
+    ~
+    first line
+    ➜second line
+    third line
+    fourth line
+
+  ['b]: 
+    second line
+    third line
+    fourth lin➜e
+    fifth line
+    sixth line
+
+  ['A]: 10lines.txt
+    ~
+    ~
+    ~
+    first➜ line
+    second line
+    third line
+    fourth line
+    fifth line
+
+  ['B]: 10lines.txt
+    second line
+    third line
+    fourth line
+    ➜fifth line
+    sixth line
+    seventh line
+    eighth line
+    ninth line
+
+  ['C]: 10lines.txt
+    seventh line
+    eighth line
+    ninth line
+    ➜tenth line
+    ~
+    ~
+    ~
+    ~
+  

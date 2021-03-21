@@ -1,0 +1,7 @@
+System|Netstat||watch  netstat -tln
+System|Images||watch docker images
+System|Running Containers||watch docker ps
+System|HTOP||htop
+Development|VIM||
+Development|RUN||
+Development|SQLITE||

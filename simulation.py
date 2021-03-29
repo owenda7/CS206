@@ -7,7 +7,11 @@ from world import WORLD
 from robot import ROBOT
 
 class SIMULATION:
-    def __init__(self):
+    def __init__(self, directOrGUI):
+        if(directOrGUI == "DIRECT"):
+          self.physicsClient = p.connect(p.DIRECT)
+        else:
+          self.physicsClient = p.connect(p.GUI)
         self.world = WORLD()
         self.robot = ROBOT()
     def __del__(self):
@@ -19,3 +23,5 @@ class SIMULATION:
             self.robot.Think()
             self.robot.Act(i)
             time.sleep(c.SLEEP)
+    def Get_Fitness(self):
+        self.robot.Get_Fitness()

@@ -1,5 +1,6 @@
 import os
-import hillclimber
+import parallelHillClimber
 
-hc = hillclimber.HILLCLIMBER()
+hc = parallelHillClimber.PARALLEL_HILLCLIMBER()
 hc.Evolve()
+hc.Evolve_For_One_Generation()

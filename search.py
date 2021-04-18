@@ -1,5 +1,6 @@
 import os
 import parallelHillClimber
+import hillclimber
 
 hc = parallelHillClimber.PARALLEL_HILLCLIMBER()
 hc.Evolve()

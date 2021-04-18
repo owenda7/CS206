@@ -57,9 +57,10 @@ class ROBOT:
         self.nn.Print()
 
     def Get_Fitness(self):
-       stateOfLinkZero=p.getLinkState(self.robot,0)
-       xCoordinateOfLinkZero=stateOfLinkZero[0][0]
+       basePositionAndOrientation = p.getBasePositionAndOrientation(self.robot)
+       basePosition = basePositionAndOrientation[0]
+       xPosition = basePosition[0]
        file = open(f"tmp{self.solutionID}.txt", "w")
-       file.write(str(xCoordinateOfLinkZero))
+       file.write(str(xPosition))
        file.close()
        os.system(f"mv tmp{self.solutionID}.txt fitness{self.solutionID}.txt")

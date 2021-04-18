@@ -51,13 +51,17 @@ class PARALLEL_HILLCLIMBER:
 
   def Select(self):
     for key in self.parents.keys():
-      if(float(self.parents[key].fitness)<float(self.children[key].fitness)):
+      if(float(self.parents[key].fitness)>float(self.children[key].fitness)):
         self.parents[key] = copy.deepcopy(self.children[key])
 
   def Show_Best(self):
     best = 0
     current = 1000
     for key in self.parents.keys():
+      print(f"key: {key} fit: {self.parents[key].fitness}") 
       if float(self.parents[key].fitness) < float(current):
+        current = self.parents[key].fitness
         best = key
+    print(best)
+    print(f"-{self.parents[best].myID}-")
     self.parents[best].Start_Simulation("GUI")

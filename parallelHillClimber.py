@@ -13,7 +13,6 @@ class PARALLEL_HILLCLIMBER:
   def Evolve(self):
     self.Evaluate(self.parents)
 
-
   def Evolve_For_One_Generation(self):
     self.Spawn()
     self.Mutate()
@@ -22,7 +21,16 @@ class PARALLEL_HILLCLIMBER:
     self.Select()
     self.Show_Best()
 
-
+  def Evolve_For_Multi_Generation(self):
+    for i in range(0,c.generations):
+      self.Spawn()
+      self.Mutate()
+      self.Evaluate(self.children)
+      self.Print()
+      self.Select()
+    self.Show_Best()
+ 
+ 
   def Spawn(self):
     self.children={}
     for key in self.parents.keys():

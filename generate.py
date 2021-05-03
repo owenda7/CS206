@@ -5,7 +5,7 @@ import random
 
 def Create_World():
     pyrosim.Start_SDF("world.sdf")
-    pyrosim.Send_Cube(name="World", pos=[3,3,.5], size=[1,1,1])
+    pyrosim.Send_Cube(name="World", pos=[3,3,1], size=[1,1,1])
     pyrosim.End()
 
 def Generate_Body():
